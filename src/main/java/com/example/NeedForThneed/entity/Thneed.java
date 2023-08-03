@@ -1,4 +1,9 @@
 package com.example.NeedForThneed.entity;
 
-public class Thneed {
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "thneed")
+public class Thneed extends DistributedEntity{
 }

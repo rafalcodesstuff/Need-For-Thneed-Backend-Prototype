@@ -2,8 +2,10 @@ package com.example.NeedForThneed.service;
 
 import com.example.NeedForThneed.api.AbstractCRUDLApi;
 import com.example.NeedForThneed.dto.AbstractBaseDTO;
+import com.example.NeedForThneed.dto.Dto;
 import com.example.NeedForThneed.entity.DistributedEntity;
 import com.example.NeedForThneed.repository.DistributedRepository;
+import jakarta.persistence.Entity;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,67 +15,73 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 abstract public class AbstractCRUDLService<ENTITY extends DistributedEntity, DTO extends AbstractBaseDTO>
         implements AbstractCRUDLApi<ENTITY, DTO> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractCRUDLService.class);
     private final DistributedRepository<ENTITY> repository;
-
-    private final ModelMapper modelMapper = new ModelMapper();
     private final Class<ENTITY> entityClass; // used for creating an entity in database
+    private final Class<DTO> dtoClass;
 
     public AbstractCRUDLService(DistributedRepository<ENTITY> repository) {
         this.repository = repository;
 
-        // this gets the class of ENTITY Generic Type
+        // this gets the class of ENTITY & Dto Generic Type
         final Class<?>[] params = GenericTypeResolver.resolveTypeArguments(getClass(), AbstractCRUDLService.class);
-        this.entityClass = (Class<ENTITY>) params[0];
-    }
 
-    protected abstract void updateEntity(ENTITY entity, DTO dto);
+        if (params == null) {
+            throw new IllegalArgumentException("Generic types for ENTITY and DTO not found.");
+        }
+
+        Class<?> entityParam = params[0];
+        if (!entityParam.isAnnotationPresent(Entity.class)) {
+            String entityClassName = entityParam.getSimpleName();
+            LOG.error("'{}' is not a jakarta.persistence.Entity.", entityClassName);
+            throw new IllegalArgumentException(entityClassName + " is not a jakarta.persistence.Entity.");
+        }
+        this.entityClass = (Class<ENTITY>) entityParam;
+
+        Class<?> dtoParam = params[1];
+        if (!dtoParam.isAnnotationPresent(Dto.class)) {
+            String dtoClassName = dtoParam.getSimpleName();
+            LOG.error("'{}' is not a dto.Dto.", dtoClassName);
+            throw new IllegalArgumentException(dtoClassName + " is not a dto.Dto.");
+        }
+        this.dtoClass = (Class<DTO>) dtoParam;
+    }
 
     @Override
     public DTO save(DTO dto) {
         ENTITY entity;
 
         if (dto.isNew()) { // this checks if the entity exists in the database (if id is set)
-            entity = initEntity();
+            entity = mapEntityOfDTO(dto);
+            entity.setCreated(LocalDateTime.now());
         } else {
-            entity = findEntityById(dto.getId());
+            entity = Optional.of(findEntityById(dto.getId())).orElseThrow(() -> {
+                LOG.error("Failed to save entity of class '{}'", entityClass.getSimpleName());
+                throw new RuntimeException("Failed to find " + entityClass.getSimpleName().replace("Entity", ""));
+            });
         }
 
-        if (entity == null) {
-            LOG.error("Failed to save entity of class '{}'", entityClass.getSimpleName());
-            throw new RuntimeException("Failed to find " + entityClass.getSimpleName().replace("Entity", ""));
-//            return null;
-        }
-
-        // set modified to the current datetime
         entity.setModified(LocalDateTime.now());
-
-        // update entity
-        updateEntity(entity, dto);
-
-        // save entity
         ENTITY savedEntity = repository.save(entity);
-
-        // convert to DTO and return it
-//        return converter.convert(savedEntity);
-        return modelMapper(savedEntity, DTO);
+        return mapEntityToDTO(savedEntity);
     }
 
     @Override
     public DTO getById(Integer id) {
-        ENTITY entity = findEntityById(id);
-
-        if (entity == null) {
+        ENTITY entity = Optional.of(findEntityById(id)).orElseThrow(() -> {
             LOG.error("Failed to find entity with ID '{}'", id);
-            throw new RuntimeException("Failed to find " + entityClass.getSimpleName().replace("Entity", "") + " with ID: " + id);
-//            return null;
-        }
-
-        return converter.convert(entity);
+            throw new RuntimeException(String.format("Failed to find %s with ID: %d",
+                    entityClass.getSimpleName().replace("Entity", ""), id)
+            );
+        });
+//        return converter.convert(entity);
+        return mapEntityToDTO(entity);
     }
 
     @Override
@@ -104,23 +112,25 @@ abstract public class AbstractCRUDLService<ENTITY extends DistributedEntity, DTO
         return repository.findById(id).orElse(null);
     }
 
+    // TODO fix this or bad things
     private List<DTO> getDtos(List<ENTITY> entities) {
         if (CollectionUtils.isEmpty(entities)) {
             return Collections.emptyList();
         }
-
-        return converter.convertList(entities);
+        return Optional.of(entities.stream()
+                .map(this::mapEntityToDTO)
+                .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 
-    private ENTITY initEntity() {
-        try {
-            ENTITY entity = entityClass.getDeclaredConstructor().newInstance();
-            entity.setCreated(LocalDateTime.now());
-
-            return entity;
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
-            return null;
-        }
+    private ENTITY mapEntityOfDTO(DTO dto) {
+        ModelMapper modelMapper = new ModelMapper();
+        return modelMapper.map(dto, entityClass);
     }
+
+    private DTO mapEntityToDTO(ENTITY entity) {
+        ModelMapper modelMapper = new ModelMapper();
+        return modelMapper.map(entity, dtoClass);
+    }
+
 }

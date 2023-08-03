@@ -7,5 +7,4 @@ import jakarta.persistence.Table;
 @Table(name = "forum_post")
 public class ForumPost extends DistributedEntity {
     private String title;
-
 }

@@ -10,26 +10,34 @@ import java.util.List;
 @Entity
 @Table(name = "project")
 public class Project extends DistributedEntity{
-    @NotBlank(message = "Name is required")
+    @NotBlank(message = "Title is required")
     @Column(name = "title", nullable = false, unique = true)
     private String title;
 
-    @ManyToMany
-    @Size(min = 1, message = "At least one user is required")
-    @Column(name = "users")
+    @ManyToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
+    @JoinTable(name = "project_user",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+//    @Size(min = 1, message = "At least one user is required")
+//    @Column(name = "user_id")
     private List<User> users;
 
-    @NotNull(message = "Creator is required")
-    @JoinColumn(name = "creator_id", nullable = false)
+    @OneToOne
+    @JoinColumn(name = "creator_id") //, nullable = false)
+//    @NotNull(message = "Creator is required")
     private User creator;
 
     @NotBlank(message = "Description is required")
     @Size(min = 1, max = 2000)
-    @Column(name = "title", nullable = false)
+    @Column(name = "description", nullable = false)
     private String description;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "forum_id", nullable = false)
+    @JoinColumn(name = "forum_id")
     private Forum forum;
 
     public Project() {
@@ -48,7 +56,7 @@ public class Project extends DistributedEntity{
         return users;
     }
 
-    public void setUsers(List<User> users) {
+    public void setUser(List<User> users) {
         this.users = users;
     }
 

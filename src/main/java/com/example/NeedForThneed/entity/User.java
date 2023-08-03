@@ -1,9 +1,6 @@
 package com.example.NeedForThneed.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -11,7 +8,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 @Entity
-@Table(name = "user")
+@Table(name = "userr")
 public class User extends DistributedEntity {
 
     @Size(min = 2, max = 30)
@@ -24,8 +21,8 @@ public class User extends DistributedEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @ManyToMany
-    @Column(name = "projects")
+    @ManyToMany(mappedBy = "users")
+//    @Column(name = "project_id")
     private List<Project> projects;
 
     public User() {

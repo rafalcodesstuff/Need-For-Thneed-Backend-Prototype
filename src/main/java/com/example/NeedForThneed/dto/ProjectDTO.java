@@ -2,15 +2,26 @@ package com.example.NeedForThneed.dto;
 
 import java.util.List;
 
+@Dto
 public class ProjectDTO extends AbstractBaseDTO {
     private Integer id;
     private String title;
     private List<UserDTO> users;
-    private Integer creatorId;
+    private Integer creator;
     private String description;
-    private Integer forumId;
+    private Integer forum;
 
     public ProjectDTO() {
+    }
+
+    @Override
+    public Integer getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -29,12 +40,12 @@ public class ProjectDTO extends AbstractBaseDTO {
         this.users = users;
     }
 
-    public Integer getCreatorId() {
-        return creatorId;
+    public Integer getCreator() {
+        return creator;
     }
 
-    public void setCreatorId(Integer creatorId) {
-        this.creatorId = creatorId;
+    public void setCreator(Integer creator) {
+        this.creator = creator;
     }
 
     public String getDescription() {
@@ -45,11 +56,11 @@ public class ProjectDTO extends AbstractBaseDTO {
         this.description = description;
     }
 
-    public Integer getForumId() {
-        return forumId;
+    public Integer getForum() {
+        return forum;
     }
 
-    public void setForumId(Integer forumId) {
-        this.forumId = forumId;
+    public void setForum(Integer forum) {
+        this.forum = forum;
     }
 }
