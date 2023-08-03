@@ -1,2 +1,2 @@
 # NeedForThneed
-A buisness project that I am currently working on. It is a collaboration course sourcing platform
+A business project that I am currently working on. It is a collaboration crowd sourcing platform
