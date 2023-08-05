@@ -4,7 +4,6 @@ import java.util.List;
 
 @Dto
 public class ProjectDTO extends AbstractBaseDTO {
-    private Integer id;
     private String title;
     private List<UserDTO> users;
     private Integer creator;
@@ -12,16 +11,6 @@ public class ProjectDTO extends AbstractBaseDTO {
     private Integer forum;
 
     public ProjectDTO() {
-    }
-
-    @Override
-    public Integer getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getTitle() {

@@ -10,10 +10,8 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.GenericTypeResolver;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -80,14 +78,15 @@ abstract public class AbstractCRUDLService<ENTITY extends DistributedEntity, DTO
                     entityClass.getSimpleName().replace("Entity", ""), id)
             );
         });
-//        return converter.convert(entity);
         return mapEntityToDTO(entity);
     }
 
     @Override
     public List<DTO> list() {
         List<ENTITY> entities = repository.findAll(); // change later to pagination
-        return getDtos(entities);
+        return entities.stream()
+                .map(this::mapEntityToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -110,17 +109,6 @@ abstract public class AbstractCRUDLService<ENTITY extends DistributedEntity, DTO
 
     private ENTITY findEntityById(Integer id) {
         return repository.findById(id).orElse(null);
-    }
-
-    // TODO fix this or bad things
-    private List<DTO> getDtos(List<ENTITY> entities) {
-        if (CollectionUtils.isEmpty(entities)) {
-            return Collections.emptyList();
-        }
-        return Optional.of(entities.stream()
-                .map(this::mapEntityToDTO)
-                .collect(Collectors.toList()))
-                .orElse(Collections.emptyList());
     }
 
     private ENTITY mapEntityOfDTO(DTO dto) {

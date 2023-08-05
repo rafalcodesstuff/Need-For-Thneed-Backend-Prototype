@@ -23,7 +23,7 @@ public class Project extends DistributedEntity{
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
 //    @Size(min = 1, message = "At least one user is required")
-//    @Column(name = "user_id")
+    @Column(name = "user_id")
     private List<User> users;
 
     @OneToOne

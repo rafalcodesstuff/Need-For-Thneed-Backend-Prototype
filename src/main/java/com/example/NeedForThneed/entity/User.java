@@ -22,7 +22,7 @@ public class User extends DistributedEntity {
     private String password;
 
     @ManyToMany(mappedBy = "users")
-//    @Column(name = "project_id")
+    @Column(name = "project_id")
     private List<Project> projects;
 
     public User() {
