@@ -4,13 +4,15 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @MappedSuperclass
-abstract public class DistributedEntity {
+public abstract class DistributedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @Column(name = "created", nullable = false)
     private LocalDateTime created;
+
     @Column(name = "modified", nullable = false)
     private LocalDateTime modified;
 

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ProjectService extends AbstractCRUDLService<Project, ProjectDTO> implements ProjectApi {
-
     @Autowired
     public ProjectService(final ProjectRepository repository) {
         super(repository);

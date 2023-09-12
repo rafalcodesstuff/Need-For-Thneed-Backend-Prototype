@@ -25,6 +25,14 @@ public class User extends DistributedEntity {
     @Column(name = "project_id")
     private List<Project> projects;
 
+    @ManyToMany
+    @JoinColumn(name = "money_contributions")
+    private List<MoneyContribution> moneyContributions;
+
+    @OneToOne
+    @JoinColumn(name = "reputation_id")
+    private UserReputation userReputation;
+
     public User() {
         super();
     }

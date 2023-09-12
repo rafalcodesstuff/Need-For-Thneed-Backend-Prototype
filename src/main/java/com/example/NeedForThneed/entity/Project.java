@@ -1,6 +1,7 @@
 package com.example.NeedForThneed.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -13,6 +14,21 @@ public class Project extends DistributedEntity{
     @NotBlank(message = "Title is required")
     @Column(name = "title", nullable = false, unique = true)
     private String title;
+
+    @NotBlank(message = "Description is required")
+    @Size(min = 1, max = 2000)
+    @Column(name = "description", nullable = false)
+    private String description;
+
+    @NotNull(message = "Total Value must not be null")
+    @Min(value = 0, message = "Total Value must not be less than 0")
+    @Transient
+    @Column(name = "total_value")
+    private Integer totalValue;
+
+    @OneToOne
+    @JoinColumn(name = "creator_id") //, nullable = false)
+    private User creator;
 
     @ManyToMany(cascade = {
             CascadeType.PERSIST,
@@ -27,18 +43,17 @@ public class Project extends DistributedEntity{
     private List<User> users;
 
     @OneToOne
-    @JoinColumn(name = "creator_id") //, nullable = false)
-//    @NotNull(message = "Creator is required")
-    private User creator;
-
-    @NotBlank(message = "Description is required")
-    @Size(min = 1, max = 2000)
-    @Column(name = "description", nullable = false)
-    private String description;
+    @JoinColumn(name = "pool_id")
+    private MoneyPool pool;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "forum_id")
     private Forum forum;
+
+    // this is here because I need to update the total value somehow
+    @OneToMany
+    @JoinColumn(name = "thneed_id")
+    private List<Thneed> thneeds;
 
     public Project() {
         super();
@@ -52,12 +67,20 @@ public class Project extends DistributedEntity{
         this.title = title;
     }
 
-    public List<User> getUsers() {
-        return users;
+    public String getDescription() {
+        return description;
     }
 
-    public void setUser(List<User> users) {
-        this.users = users;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Integer getTotalValue() {
+        return totalValue;
+    }
+
+    public void setTotalValue(Integer totalValue) {
+        this.totalValue = totalValue;
     }
 
     public User getCreator() {
@@ -68,12 +91,12 @@ public class Project extends DistributedEntity{
         this.creator = creator;
     }
 
-    public String getDescription() {
-        return description;
+    public List<User> getUsers() {
+        return users;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setUsers(List<User> users) {
+        this.users = users;
     }
 
     public Forum getForum() {
